@@ -2,7 +2,7 @@ import {URLSearchParams} from 'url';
 import {ConnectedCarException} from '../Exceptions/ConnectedCarException';
 import {AccessToken} from './AccessToken';
 import pkceChallenge from 'pkce-challenge';
-import axios, {AxiosInstance} from 'axios';
+import axios, {AxiosInstance, AxiosProxyConfig} from 'axios';
 import {wrapper} from 'axios-cookiejar-support';
 import {CookieJar} from 'tough-cookie';
 
@@ -29,6 +29,8 @@ export class OAuth2Client {
 
   private region: string;
 
+  private proxy: AxiosProxyConfig | false = false;
+
   private regions = {
     US: '71A3AD0A-CF46-4CCF-B473-FC7FE5BC4592',
     CA: '71A3AD0A-CF46-4CCF-B473-FC7FE5BC4592',
@@ -42,23 +44,32 @@ export class OAuth2Client {
   }
 
   /**
+   * Set proxy for axios request
+   * @param proxy AxiosProxyConfig
+   * @returns void
+   */
+  public setProxy(proxy: AxiosProxyConfig): void {
+    this.proxy = proxy;
+  }
+
+  /**
    * Get a new access token from credentials
    * @param auth AuthInterface
    * @returns accessToken
    */
   public async getAccessTokenFromCredentials(auth: AuthInterface): Promise<AccessToken> {
     const jar = new CookieJar();
-    const client = wrapper(axios.create({jar}));
+    const client = wrapper(axios.create({jar, proxy: this.proxy}));
     const pkce = pkceChallenge();
 
-    const webSession: {code: string; grantId: string} = await this.initalizeWebSession(
+    const webSession: { code: string; grantId: string } = await this.initalizeWebSession(
       client,
       pkce.code_challenge
     )
       .then(async (authURL: string) => {
         return this.attemptLogin(authURL, auth, client).then(async (url: string) => {
           return this.fetchAuthorizationCode(url, client).then(
-            (data: {code: string; grantId: string}) => data
+            (data: { code: string; grantId: string }) => data
           );
         });
       })
@@ -161,7 +172,7 @@ export class OAuth2Client {
   private async fetchAuthorizationCode(
     url: string,
     client: AxiosInstance
-  ): Promise<{code: string; grantId: string}> {
+  ): Promise<{ code: string; grantId: string }> {
     return client
       .get(url, {
         maxRedirects: 0,
@@ -211,6 +222,7 @@ export class OAuth2Client {
             'Content-Type': 'application/json',
             'Application-Id': this.region,
           },
+          proxy: this.proxy
         }
       )
       .then(res => {
@@ -240,6 +252,7 @@ export class OAuth2Client {
             ...this.getDefaultHeaders(),
             'Content-Type': 'application/x-www-form-urlencoded',
           },
+          proxy: this.proxy
         }
       )
       .then(async res => {
@@ -256,6 +269,7 @@ export class OAuth2Client {
                   'Content-Type': 'application/json',
                   'Application-Id': this.region,
                 },
+                proxy: this.proxy
               }
             )
             .then(res => {

@@ -57,3 +57,4 @@ dist
 lib
 package-lock.json
 .eslintcache
+.idea

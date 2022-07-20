@@ -1,4 +1,4 @@
-import axios, {AxiosResponse} from 'axios';
+import axios, {AxiosProxyConfig, AxiosResponse} from 'axios';
 import {ConnectedCarException} from '../Exceptions/ConnectedCarException';
 
 /**
@@ -6,6 +6,8 @@ import {ConnectedCarException} from '../Exceptions/ConnectedCarException';
  */
 export class Api {
   private headers: {};
+
+  private proxy: AxiosProxyConfig | false = false;
 
   constructor(accessToken: string, region: string) {
     const regions = {
@@ -26,9 +28,19 @@ export class Api {
     };
   }
 
+  /**
+   * Set proxy for axios request
+   * @param proxy AxiosProxyConfig
+   * @returns void
+   */
+  public setProxy(proxy: AxiosProxyConfig): void {
+    this.proxy = proxy;
+  }
+
+
   public async get(url: string): Promise<AxiosResponse['data']> {
     return await axios
-      .get(url, {headers: this.headers})
+      .get(url, {headers: this.headers, proxy: this.proxy})
       .then(res => res.data)
       .catch(err => {
         let status = err.response.status;
@@ -41,7 +53,7 @@ export class Api {
 
   public async post(url: string, data: {}): Promise<AxiosResponse['data']> {
     return await axios
-      .post(url, data, {headers: this.headers})
+      .post(url, data, {headers: this.headers, proxy: this.proxy})
       .then(res => res.data)
       .catch(err => {
         let status = err.response.status;
@@ -54,7 +66,7 @@ export class Api {
 
   public async put(url: string, data?: {}): Promise<AxiosResponse['data']> {
     return await axios
-      .put(url, data, {headers: this.headers})
+      .put(url, data, {headers: this.headers, proxy: this.proxy})
       .then(res => res.data)
       .catch(err => {
         let status = err.response.status;
@@ -67,7 +79,7 @@ export class Api {
 
   public async delete(url: string): Promise<AxiosResponse['data']> {
     return await axios
-      .delete(url, {headers: this.headers})
+      .delete(url, {headers: this.headers, proxy: this.proxy})
       .then(res => res.data)
       .catch(err => {
         let status = err.response.status;

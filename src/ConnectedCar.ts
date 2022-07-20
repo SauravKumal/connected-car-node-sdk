@@ -1,6 +1,7 @@
 import {OAuth2Client} from './Authentication/OAuth2Client';
 import {Vehicle} from './Vehicle/Vehicle';
 import {User} from './User/User';
+import {AxiosProxyConfig} from "axios";
 
 export interface RegionInterface {
   region: 'US' | 'CA' | 'EU' | 'AU';
