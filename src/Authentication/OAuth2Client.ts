@@ -59,7 +59,7 @@ export class OAuth2Client {
    */
   public async getAccessTokenFromCredentials(auth: AuthInterface): Promise<AccessToken> {
     const jar = new CookieJar();
-    const client = wrapper(axios.create({jar, proxy: this.proxy}));
+    const client = wrapper(axios.create({jar}));
     const pkce = pkceChallenge();
 
     const webSession: { code: string; grantId: string } = await this.initalizeWebSession(
@@ -106,6 +106,7 @@ export class OAuth2Client {
           headers: {
             ...this.getDefaultHeaders(),
           },
+          proxy: this.proxy
         }
       )
       .then(async res => {
@@ -150,6 +151,7 @@ export class OAuth2Client {
             'Content-Type': 'application/x-www-form-urlencoded',
             ...this.getDefaultHeaders(),
           },
+          proxy: this.proxy
         }
       )
       .then(() => {
@@ -180,6 +182,7 @@ export class OAuth2Client {
           'Content-Type': 'application/x-www-form-urlencoded',
           ...this.getDefaultHeaders(),
         },
+        proxy: this.proxy
       })
       .then(() => {
         throw new Error('Fetch Authorization Code: Unhandled Success Code');
